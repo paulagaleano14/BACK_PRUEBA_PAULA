@@ -21,4 +21,10 @@ public class PrecioProducto {
     @ManyToOne
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
+
+    public PrecioProducto(String moneda, Double valor, Producto producto) {
+        this.moneda = moneda;
+        this.valor = valor;
+        this.producto = producto;
+    }
 }

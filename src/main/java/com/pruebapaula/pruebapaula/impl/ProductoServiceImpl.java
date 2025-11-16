@@ -8,6 +8,7 @@ import com.pruebapaula.pruebapaula.exceptions.ResourceNotFoundException;
 import com.pruebapaula.pruebapaula.repository.*;
 import com.pruebapaula.pruebapaula.services.ProductoService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +59,49 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional
+    public ProductoResponseDTO editarProducto(Long id, ProductoRequestDTO dto) {
+
+        Producto p = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        // Campos simples
+        p.setCodigo(dto.getCodigo());
+        p.setNombre(dto.getNombre());
+        p.setCaracteristicas(dto.getCaracteristicas());
+
+        // Empresa
+        Empresa empresa = empresaRepository.findById(dto.getEmpresaNIT())
+                .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+
+        p.setEmpresa(empresa);
+
+        if (dto.getPrecios() == null || dto.getPrecios().isEmpty()) {
+            throw new RuntimeException("Precios no pueden ser vacíos");
+        }
+
+        // limpiar precios actuales
+        p.getPrecios().clear();
+        dto.getPrecios().forEach((moneda, valor) -> {
+            if (moneda == null || moneda.isBlank()) {
+                throw new RuntimeException("Moneda inválida");
+            }
+            if (valor == null) {
+                throw new RuntimeException("Valor inválido para " + moneda);
+            }
+
+            p.getPrecios().add(
+                    new PrecioProducto(moneda, valor, p)
+            );
+        });
+
+        productoRepository.save(p);
+
+        return mapToResponse(p);
+    }
+
+
+    @Override
     public List<ProductoResponseDTO> listarProductosPorEmpresa(String nit) {
 
         return productoRepository.findAll().stream()
@@ -106,6 +150,15 @@ public class ProductoServiceImpl implements ProductoService {
                 .nombre(p.getEmpresa().getNombre())
                 .build();
     }
+
+    @Override
+    @Transactional
+    public void eliminarProducto(Long id) {
+        Producto p = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        productoRepository.delete(p);
+    }
+
 
 
 }

@@ -33,4 +33,16 @@ public class ProductoController {
     public List<ProductoResponseDTO> listar(@PathVariable String nit) {
         return productoService.listarProductosPorEmpresa(nit);
     }
+
+    @PutMapping("/{id}")
+    public ProductoResponseDTO editar(@PathVariable Long id, @RequestBody ProductoRequestDTO dto) {
+        return productoService.editarProducto(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminar(@PathVariable Long id) {
+        productoService.eliminarProducto(id);
+    }
+
+
 }
