@@ -20,35 +20,37 @@ public class EmpresaController {
     private final EmpresaService empresaService;
 
     @GetMapping
-    public List<EmpresaResponseDTO> listar() {
-        return empresaService.listar();
+    public ResponseEntity<List<EmpresaResponseDTO>> listar() {
+        return ResponseEntity.ok(empresaService.listar());
     }
 
-    @GetMapping("/{id}")
-    public EmpresaResponseDTO obtener(@PathVariable Long id) {
-        return empresaService.obtener(id);
+    @GetMapping("/{nit}")
+    public ResponseEntity<EmpresaResponseDTO> obtener(@PathVariable String nit) {
+        return ResponseEntity.ok(empresaService.obtener(nit));
     }
 
     // Solo ADMIN puede crear/editar/eliminar
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<EmpresaResponseDTO> crear(@Valid @RequestBody EmpresaRequestDTO request) {
+    public ResponseEntity<EmpresaResponseDTO> crear(
+            @Valid @RequestBody EmpresaRequestDTO request
+    ) {
         return ResponseEntity.ok(empresaService.crear(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
+    @PutMapping("/{nit}")
     public ResponseEntity<EmpresaResponseDTO> actualizar(
-            @PathVariable Long id,
+            @PathVariable String nit,
             @Valid @RequestBody EmpresaRequestDTO request
     ) {
-        return ResponseEntity.ok(empresaService.actualizar(id, request));
+        return ResponseEntity.ok(empresaService.actualizar(nit, request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        empresaService.eliminar(id);
+    @DeleteMapping("/{nit}")
+    public ResponseEntity<Void> eliminar(@PathVariable String nit) {
+        empresaService.eliminar(nit);
         return ResponseEntity.noContent().build();
     }
 }

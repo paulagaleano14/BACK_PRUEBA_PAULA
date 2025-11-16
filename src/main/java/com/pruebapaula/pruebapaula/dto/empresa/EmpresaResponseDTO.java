@@ -7,7 +7,6 @@ import lombok.Data;
 @Builder
 public class EmpresaResponseDTO {
 
-    private Long id;
     private String nit;
     private String nombre;
     private String direccion;

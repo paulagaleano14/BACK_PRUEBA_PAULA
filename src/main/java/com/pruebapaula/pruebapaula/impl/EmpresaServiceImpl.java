@@ -21,8 +21,10 @@ public class EmpresaServiceImpl implements EmpresaService {
     @Override
     public EmpresaResponseDTO crear(EmpresaRequestDTO request) {
 
-        if (empresaRepository.existsByNit(request.getNit())) {
-            throw new ResourceAlreadyExistsException("Ya existe una empresa con el NIT: " + request.getNit());
+        if (empresaRepository.existsById(request.getNit())) {
+            throw new ResourceAlreadyExistsException(
+                    "La empresa con NIT " + request.getNit() + " ya existe."
+            );
         }
 
         Empresa empresa = new Empresa();
@@ -36,43 +38,54 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public EmpresaResponseDTO actualizar(Long id, EmpresaRequestDTO request) {
-        Empresa empresa = empresaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Empresa con id " + id + " no existe."));
+    public EmpresaResponseDTO obtener(String nit) {
+        Empresa empresa = empresaRepository.findById(nit)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Empresa no encontrada con NIT: " + nit
+                        )
+                );
+
+        return toResponse(empresa);
+    }
+
+    @Override
+    public EmpresaResponseDTO actualizar(String nit, EmpresaRequestDTO request) {
+        Empresa empresa = empresaRepository.findById(nit)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Empresa no encontrada con NIT: " + nit
+                        )
+                );
 
         empresa.setNombre(request.getNombre());
         empresa.setDireccion(request.getDireccion());
         empresa.setTelefono(request.getTelefono());
 
-        return toResponse(empresaRepository.save(empresa));
+        Empresa updated = empresaRepository.save(empresa);
+        return toResponse(updated);
     }
 
     @Override
-    public void eliminar(Long id) {
-        if (!empresaRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No existe empresa con id " + id);
+    public void eliminar(String nit) {
+        if (!empresaRepository.existsById(nit)) {
+            throw new ResourceNotFoundException(
+                    "No existe empresa con NIT: " + nit
+            );
         }
-        empresaRepository.deleteById(id);
-    }
 
-    @Override
-    public EmpresaResponseDTO obtener(Long id) {
-        Empresa empresa = empresaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Empresa con id " + id + " no existe."));
-        return toResponse(empresa);
+        empresaRepository.deleteById(nit);
     }
 
     @Override
     public List<EmpresaResponseDTO> listar() {
-        return empresaRepository.findAll()
-                .stream()
+        return empresaRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     private EmpresaResponseDTO toResponse(Empresa e) {
         return EmpresaResponseDTO.builder()
-                .id(e.getId())
                 .nit(e.getNit())
                 .nombre(e.getNombre())
                 .direccion(e.getDireccion())

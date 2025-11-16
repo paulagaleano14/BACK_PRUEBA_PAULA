@@ -9,11 +9,11 @@ public interface EmpresaService {
 
     EmpresaResponseDTO crear(EmpresaRequestDTO request);
 
-    EmpresaResponseDTO actualizar(Long id, EmpresaRequestDTO request);
+    EmpresaResponseDTO actualizar(String nit, EmpresaRequestDTO request);
 
-    void eliminar(Long id);
+    void eliminar(String nit);
 
-    EmpresaResponseDTO obtener(Long id);
+    EmpresaResponseDTO obtener(String nit);
 
     List<EmpresaResponseDTO> listar();
 }
