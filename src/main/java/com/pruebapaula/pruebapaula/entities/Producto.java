@@ -3,16 +3,21 @@ package com.pruebapaula.pruebapaula.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
-@Table(name = "producto")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "producto")
 public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String codigo;
 
     @Column(nullable = false)
@@ -20,11 +25,10 @@ public class Producto {
 
     private String caracteristicas;
 
-    private Double precioCop;
-    private Double precioUsd;
-    private Double precioEur;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "empresa_id")
+    @ManyToOne
+    @JoinColumn(name = "empresa_nit", nullable = false)
     private Empresa empresa;
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PrecioProducto> precios;
 }
