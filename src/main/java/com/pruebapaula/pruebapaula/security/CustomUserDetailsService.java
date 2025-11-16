@@ -3,11 +3,8 @@ package com.pruebapaula.pruebapaula.security;
 import com.pruebapaula.pruebapaula.repository.UsuarioRepository;
 import com.pruebapaula.pruebapaula.entities.Usuario;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,12 +15,19 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("No existe usuario con email " + email));
+        Usuario user = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        return User.withUsername(usuario.getEmail())
-                .password(usuario.getPassword())
-                .roles(usuario.getRole().getNombre()) // ADMIN / EXTERNO
+        String roleName = user.getRole().getNombre(); // ROLE_ADMIN o ROLE_EXTERNO
+
+        if (roleName.startsWith("ROLE_")) {
+            roleName = roleName.substring(5); // ADMIN o EXTERNO
+        }
+
+        return User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles(roleName) // Spring agregará ROLE_ automáticamente
                 .build();
     }
 }

@@ -1,8 +1,10 @@
 package com.pruebapaula.pruebapaula.config;
 
+import com.pruebapaula.pruebapaula.handlers.CustomAccessDeniedHandler;
 import com.pruebapaula.pruebapaula.security.CustomUserDetailsService;
 import com.pruebapaula.pruebapaula.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,6 +27,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
 
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -32,13 +37,26 @@ public class SecurityConfig {
                 .userDetailsService(userDetailsService)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Eendpoint libre de autenticación libres
+                        // LOGIN público
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Lo demás requiere estar logueado
+
+                        // GET empresa permitido a todos
+                        .requestMatchers(HttpMethod.GET, "/api/empresas/**").permitAll()
+
+                        // POST/PUT/DELETE empresa solo ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/empresas/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/empresas/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/empresas/**").hasRole("ADMIN")
+
+                        // Cualquier otro endpoint requiere autenticación
                         .anyRequest().authenticated()
                 )
                 // Filtro JWT antes del filtro de username/password
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+                http.exceptionHandling(ex -> ex
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                );
 
         return http.build();
     }
