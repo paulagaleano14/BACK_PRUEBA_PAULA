@@ -9,6 +9,6 @@ import software.amazon.awssdk.services.ses.endpoints.internal.Value;
 @Builder
 public class AuthResponseDTO {
     private String token;
-    private String role;
+    private Long role;
 }
 

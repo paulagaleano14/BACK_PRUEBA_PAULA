@@ -37,7 +37,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 AuthResponseDTO.builder()
                         .token(token)
-                        .role(user.getRole().getNombre())
+                        .role(user.getRole().getId())
                         .build()
         );
     }
