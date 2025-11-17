@@ -1,4 +1,4 @@
-package pruebapaula.security;
+package com.pruebapaula.pruebapaula.auth.security;
 
 import com.pruebapaula.pruebapaula.entities.Role;
 import com.pruebapaula.pruebapaula.entities.Usuario;
