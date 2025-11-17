@@ -1,5 +1,6 @@
 package com.pruebapaula.pruebapaula.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,8 +26,9 @@ public class Producto {
 
     private String caracteristicas;
 
+    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "empresa_nit", nullable = false)
+    @JoinColumn(name = "empresa_nit")
     private Empresa empresa;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class InventarioEmailRequest {
-    private String empresaNIT;
     private String emailDestino;
+    private String empresaNIT;
 }

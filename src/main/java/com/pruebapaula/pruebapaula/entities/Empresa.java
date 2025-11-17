@@ -1,5 +1,6 @@
 package com.pruebapaula.pruebapaula.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,8 @@ public class Empresa {
     private String direccion;
     private String telefono;
 
-    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Producto> productos = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "empresa")
+    private List<Producto> productos;
+
 }
