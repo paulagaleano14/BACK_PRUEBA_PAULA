@@ -1,6 +1,5 @@
 package com.pruebapaula.pruebapaula.services;
 
-import com.pruebapaula.pruebapaula.dto.empresa.EmpresaResponseDTO;
 import com.pruebapaula.pruebapaula.dto.producto.ProductoRequestDTO;
 import com.pruebapaula.pruebapaula.dto.producto.ProductoResponseDTO;
 

@@ -1,6 +1,5 @@
 package com.pruebapaula.pruebapaula.controllers;
 
-import com.pruebapaula.pruebapaula.dto.empresa.EmpresaResponseDTO;
 import com.pruebapaula.pruebapaula.dto.producto.ProductoRequestDTO;
 import com.pruebapaula.pruebapaula.dto.producto.ProductoResponseDTO;
 import com.pruebapaula.pruebapaula.services.ProductoService;

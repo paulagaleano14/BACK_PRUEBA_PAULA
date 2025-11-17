@@ -2,10 +2,13 @@ package com.pruebapaula.pruebapaula.impl;
 
 import com.pruebapaula.pruebapaula.dto.producto.ProductoRequestDTO;
 import com.pruebapaula.pruebapaula.dto.producto.ProductoResponseDTO;
-import com.pruebapaula.pruebapaula.entities.*;
+import com.pruebapaula.pruebapaula.entities.Empresa;
+import com.pruebapaula.pruebapaula.entities.PrecioProducto;
+import com.pruebapaula.pruebapaula.entities.Producto;
 import com.pruebapaula.pruebapaula.exceptions.ResourceAlreadyExistsException;
 import com.pruebapaula.pruebapaula.exceptions.ResourceNotFoundException;
-import com.pruebapaula.pruebapaula.repository.*;
+import com.pruebapaula.pruebapaula.repository.EmpresaRepository;
+import com.pruebapaula.pruebapaula.repository.ProductoRepository;
 import com.pruebapaula.pruebapaula.services.ProductoService;
 
 import jakarta.transaction.Transactional;

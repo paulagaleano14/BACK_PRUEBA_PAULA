@@ -1,4 +1,4 @@
-package com.pruebapaula.pruebapaula.security;
+package pruebapaula.security;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

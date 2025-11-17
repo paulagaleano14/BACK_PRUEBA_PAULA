@@ -1,7 +1,8 @@
-package com.pruebapaula.pruebapaula.security;
+package pruebapaula.security;
 
 import com.pruebapaula.pruebapaula.entities.Role;
 import com.pruebapaula.pruebapaula.entities.Usuario;
+import com.pruebapaula.pruebapaula.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
