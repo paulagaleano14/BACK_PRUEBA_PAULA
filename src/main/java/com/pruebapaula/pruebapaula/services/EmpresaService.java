@@ -11,7 +11,7 @@ public interface EmpresaService {
 
     EmpresaResponseDTO actualizar(String nit, EmpresaRequestDTO request);
 
-    void eliminar(String nit);
+    boolean eliminar(String nit);
 
     EmpresaResponseDTO obtener(String nit);
 

@@ -6,6 +6,7 @@ import com.pruebapaula.pruebapaula.dto.auth.ErrorResponseDTO;
 import com.pruebapaula.pruebapaula.security.JwtService;
 import com.pruebapaula.pruebapaula.entities.Usuario;
 import com.pruebapaula.pruebapaula.repository.UsuarioRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,21 +25,35 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequestDTO request) {
 
-        Usuario user = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        try {
+            // Buscar usuario
+            Usuario user = usuarioRepository.findByEmail(request.getEmail())
+                    .orElse(null);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponseDTO("Usuario o contraseña incorrectos"));
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ErrorResponseDTO("Usuario no encontrado"));
+            }
+
+            // Validar contraseña
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponseDTO("Usuario o contraseña incorrectos"));
+            }
+
+            // Generar token
+            String token = jwtService.generateToken(user);
+
+            return ResponseEntity.ok(
+                    AuthResponseDTO.builder()
+                            .token(token)
+                            .role(user.getRole().getId())
+                            .build()
+            );
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponseDTO("Ocurrió un error interno: " + ex.getMessage()));
         }
-
-        String token = jwtService.generateToken(user);
-
-        return ResponseEntity.ok(
-                AuthResponseDTO.builder()
-                        .token(token)
-                        .role(user.getRole().getId())
-                        .build()
-        );
     }
 }

@@ -10,6 +10,6 @@ public interface ProductoService {
     List<ProductoResponseDTO> listarProductosPorEmpresa(String nit);
     List<ProductoResponseDTO> listar();
     ProductoResponseDTO editarProducto(Long id, ProductoRequestDTO dto);
-    void eliminarProducto(Long id);
+    boolean eliminarProducto(Long id);
 
 }

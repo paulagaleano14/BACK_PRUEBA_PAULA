@@ -67,7 +67,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public void eliminar(String nit) {
+    public boolean eliminar(String nit) {
         if (!empresaRepository.existsById(nit)) {
             throw new ResourceNotFoundException(
                     "No existe empresa con NIT: " + nit
@@ -75,6 +75,7 @@ public class EmpresaServiceImpl implements EmpresaService {
         }
 
         empresaRepository.deleteById(nit);
+        return true;
     }
 
     @Override
