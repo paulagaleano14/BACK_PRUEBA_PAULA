@@ -20,69 +20,106 @@ public class EmpresaServiceImpl implements EmpresaService {
 
     @Override
     public EmpresaResponseDTO crear(EmpresaRequestDTO request) {
+        try {
 
-        if (empresaRepository.existsById(request.getNit())) {
-            throw new ResourceAlreadyExistsException(
-                    "La empresa con NIT " + request.getNit() + " ya existe."
-            );
+            if (empresaRepository.existsById(request.getNit())) {
+                throw new ResourceAlreadyExistsException(
+                        "La empresa con NIT " + request.getNit() + " ya existe."
+                );
+            }
+
+            Empresa empresa = new Empresa();
+            empresa.setNit(request.getNit());
+            empresa.setNombre(request.getNombre());
+            empresa.setDireccion(request.getDireccion());
+            empresa.setTelefono(request.getTelefono());
+
+            Empresa saved = empresaRepository.save(empresa);
+            return toResponse(saved);
+
+        } catch (ResourceAlreadyExistsException e) {
+            throw e; // permitir que fluya
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al crear la empresa.", e);
         }
-
-        Empresa empresa = new Empresa();
-        empresa.setNit(request.getNit());
-        empresa.setNombre(request.getNombre());
-        empresa.setDireccion(request.getDireccion());
-        empresa.setTelefono(request.getTelefono());
-
-        Empresa saved = empresaRepository.save(empresa);
-        return toResponse(saved);
     }
 
     @Override
     public EmpresaResponseDTO obtener(String nit) {
-        Empresa empresa = empresaRepository.findById(nit)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Empresa no encontrada con NIT: " + nit
-                        )
-                );
+        try {
 
-        return toResponse(empresa);
+            Empresa empresa = empresaRepository.findById(nit)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Empresa no encontrada con NIT: " + nit
+                            )
+                    );
+
+            return toResponse(empresa);
+
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al obtener la empresa.", e);
+        }
     }
 
     @Override
     public EmpresaResponseDTO actualizar(String nit, EmpresaRequestDTO request) {
-        Empresa empresa = empresaRepository.findById(nit)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Empresa no encontrada con NIT: " + nit
-                        )
-                );
+        try {
 
-        empresa.setNombre(request.getNombre());
-        empresa.setDireccion(request.getDireccion());
-        empresa.setTelefono(request.getTelefono());
+            Empresa empresa = empresaRepository.findById(nit)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Empresa no encontrada con NIT: " + nit
+                            )
+                    );
 
-        Empresa updated = empresaRepository.save(empresa);
-        return toResponse(updated);
+            empresa.setNombre(request.getNombre());
+            empresa.setDireccion(request.getDireccion());
+            empresa.setTelefono(request.getTelefono());
+
+            Empresa updated = empresaRepository.save(empresa);
+            return toResponse(updated);
+
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al actualizar la empresa.", e);
+        }
     }
 
     @Override
     public boolean eliminar(String nit) {
-        if (!empresaRepository.existsById(nit)) {
-            throw new ResourceNotFoundException(
-                    "No existe empresa con NIT: " + nit
-            );
-        }
+        try {
 
-        empresaRepository.deleteById(nit);
-        return true;
+            if (!empresaRepository.existsById(nit)) {
+                throw new ResourceNotFoundException(
+                        "No existe empresa con NIT: " + nit
+                );
+            }
+
+            empresaRepository.deleteById(nit);
+            return true;
+
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al eliminar la empresa.", e);
+        }
     }
 
     @Override
     public List<EmpresaResponseDTO> listar() {
-        return empresaRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
+        try {
+
+            return empresaRepository.findAll().stream()
+                    .map(this::toResponse)
+                    .toList();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al listar empresas.", e);
+        }
     }
 
     private EmpresaResponseDTO toResponse(Empresa e) {

@@ -27,90 +27,105 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoResponseDTO crearProducto(ProductoRequestDTO dto) {
+        try {
 
-        if (productoRepository.existsByCodigo(dto.getCodigo())) {
-            throw new ResourceAlreadyExistsException("El producto ya existe");
+            if (productoRepository.existsByCodigo(dto.getCodigo())) {
+                throw new ResourceAlreadyExistsException("El producto ya existe");
+            }
+
+            Empresa empresa = empresaRepository.findById(dto.getEmpresaNIT())
+                    .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada"));
+
+            Producto producto = Producto.builder()
+                    .codigo(dto.getCodigo())
+                    .nombre(dto.getNombre())
+                    .caracteristicas(dto.getCaracteristicas())
+                    .empresa(empresa)
+                    .build();
+
+            // precios
+            List<PrecioProducto> precios = new ArrayList<>();
+            dto.getPrecios().forEach((moneda, valor) -> {
+                precios.add(
+                        PrecioProducto.builder()
+                                .moneda(moneda)
+                                .valor(valor)
+                                .producto(producto)
+                                .build()
+                );
+            });
+
+            producto.setPrecios(precios);
+
+            productoRepository.save(producto);
+
+            return mapToResponse(producto);
+
+        } catch (ResourceAlreadyExistsException | ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al crear el producto.", e);
         }
-
-        Empresa empresa = empresaRepository.findById(dto.getEmpresaNIT())
-                .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada"));
-
-        Producto producto = Producto.builder()
-                .codigo(dto.getCodigo())
-                .nombre(dto.getNombre())
-                .caracteristicas(dto.getCaracteristicas())
-                .empresa(empresa)
-                .build();
-
-        // Manejo de precios
-        List<PrecioProducto> precios = new ArrayList<>();
-        dto.getPrecios().forEach((moneda, valor) -> {
-            precios.add(
-                    PrecioProducto.builder()
-                            .moneda(moneda)
-                            .valor(valor)
-                            .producto(producto)
-                            .build()
-            );
-        });
-
-        producto.setPrecios(precios);
-
-        productoRepository.save(producto);
-
-        return mapToResponse(producto);
     }
 
     @Override
     @Transactional
     public ProductoResponseDTO editarProducto(Long id, ProductoRequestDTO dto) {
+        try {
 
-        Producto p = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+            Producto p = productoRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
 
-        // Campos simples
-        p.setCodigo(dto.getCodigo());
-        p.setNombre(dto.getNombre());
-        p.setCaracteristicas(dto.getCaracteristicas());
+            // Campos simples
+            p.setCodigo(dto.getCodigo());
+            p.setNombre(dto.getNombre());
+            p.setCaracteristicas(dto.getCaracteristicas());
 
-        // Empresa
-        Empresa empresa = empresaRepository.findById(dto.getEmpresaNIT())
-                .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+            Empresa empresa = empresaRepository.findById(dto.getEmpresaNIT())
+                    .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada"));
 
-        p.setEmpresa(empresa);
+            p.setEmpresa(empresa);
 
-        if (dto.getPrecios() == null || dto.getPrecios().isEmpty()) {
-            throw new RuntimeException("Precios no pueden ser vacíos");
+            if (dto.getPrecios() == null || dto.getPrecios().isEmpty()) {
+                throw new RuntimeException("Precios no pueden ser vacíos");
+            }
+
+            // limpiar precios actuales
+            p.getPrecios().clear();
+            dto.getPrecios().forEach((moneda, valor) -> {
+                if (moneda == null || moneda.isBlank()) {
+                    throw new RuntimeException("Moneda inválida");
+                }
+                if (valor == null) {
+                    throw new RuntimeException("Valor inválido para " + moneda);
+                }
+
+                p.getPrecios().add(new PrecioProducto(moneda, valor, p));
+            });
+
+            productoRepository.save(p);
+
+            return mapToResponse(p);
+
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al editar el producto.", e);
         }
-
-        // limpiar precios actuales
-        p.getPrecios().clear();
-        dto.getPrecios().forEach((moneda, valor) -> {
-            if (moneda == null || moneda.isBlank()) {
-                throw new RuntimeException("Moneda inválida");
-            }
-            if (valor == null) {
-                throw new RuntimeException("Valor inválido para " + moneda);
-            }
-
-            p.getPrecios().add(
-                    new PrecioProducto(moneda, valor, p)
-            );
-        });
-
-        productoRepository.save(p);
-
-        return mapToResponse(p);
     }
-
 
     @Override
     public List<ProductoResponseDTO> listarProductosPorEmpresa(String nit) {
+        try {
 
-        return productoRepository.findAll().stream()
-                .filter(p -> p.getEmpresa().getNit().equals(nit))
-                .map(this::mapToResponse)
-                .toList();
+            return productoRepository.findAll().stream()
+                    .filter(p -> p.getEmpresa().getNit().equals(nit))
+                    .map(this::mapToResponse)
+                    .toList();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al listar productos por empresa.", e);
+        }
     }
 
     private ProductoResponseDTO mapToResponse(Producto p) {
@@ -131,9 +146,15 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public List<ProductoResponseDTO> listar() {
-        return productoRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
+        try {
+
+            return productoRepository.findAll().stream()
+                    .map(this::toResponse)
+                    .toList();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al listar productos.", e);
+        }
     }
 
     private ProductoResponseDTO toResponse(Producto p) {
@@ -150,19 +171,25 @@ public class ProductoServiceImpl implements ProductoService {
                 .caracteristicas(p.getCaracteristicas())
                 .precios(preciosMap)
                 .empresaNIT(p.getEmpresa().getNit())
-                .nombre(p.getEmpresa().getNombre())
+                .nombre(p.getEmpresa().getNombre()) // ⚠️ posible error: sobrescribe nombre del producto
                 .build();
     }
 
     @Override
     @Transactional
     public boolean eliminarProducto(Long id) {
-        Producto p = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        productoRepository.delete(p);
-        return true;
+        try {
+
+            Producto p = productoRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+
+            productoRepository.delete(p);
+            return true;
+
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error inesperado al eliminar el producto.", e);
+        }
     }
-
-
-
 }
